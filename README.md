@@ -1,4 +1,4 @@
-# IF YOU ARE HERE FROM THE YT VIDEO
+# IF YOU ARE HERE FROM [THE YT VIDEO](https://www.youtube.com/watch?v=ws9zR-UzwTE)
 a few things changed.  completion is a bit different for skills.  i now require `@` to begin with
 ... ill try to update as it happens ...
 
