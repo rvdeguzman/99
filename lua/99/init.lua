@@ -444,8 +444,6 @@ function _99.__get_state()
 end
 
 local function shut_down_in_flight_requests_window()
-  print("shut_down_in_flight_requests_window")
-  print(debug.traceback())
   if _99_state.show_in_flight_requests_throbber then
     _99_state.show_in_flight_requests_throbber:stop()
   end
@@ -476,7 +474,6 @@ local function show_in_flight_requests()
 
   if _99_state.show_in_flight_requests_window == nil then
     local win = Window.status_window()
-    print("created throbber")
     local throb = Throbber.new(function(throb)
       local count = _99_state:active_request_count()
       if count == 0 or not Window.valid(win) then
@@ -491,13 +488,11 @@ local function show_in_flight_requests()
       end
 
       Window.vertical_resize(win, #lines)
-      print("vertical_resize", #lines)
-      vim.api.nvim_buf_set_lines(win.buf_id, 0, 1, lines)
+      vim.api.nvim_buf_set_lines(win.buf_id, 0, 1, false, lines)
     end)
     _99_state.show_in_flight_requests_window = win
     _99_state.show_in_flight_requests_throbber = throb
 
-    print("created throbber")
     throb:start()
   end
 end
@@ -593,5 +588,6 @@ function _99.__debug()
 end
 
 _99.Providers = Providers
-
 return _99
+
+

@@ -1,3 +1,5 @@
+--- TODO: I need to refactor a lot of this file
+--- it really sucks
 local Agents = require("99.extensions.agents")
 
 --- @class _99.window.Module
@@ -17,6 +19,8 @@ local nvim_buf_is_valid = vim.api.nvim_buf_is_valid
 --- @field anchor string?
 --- @field border nil | string | string[]
 --- @field zindex number?
+--- @field relative string?
+--- @field title string
 
 --- @class _99.window.Window
 --- @field config _99.window.Config
@@ -55,8 +59,9 @@ local function create_window_top_config()
 end
 
 --- @param zindex number
+--- @param title string
 --- @return _99.window.Config
-local function create_transparent_top_right_config(zindex)
+local function create_transparent_top_right_config(zindex, title)
   local width, _ = get_ui_dimensions()
   return {
     width = math.floor(width / 3),
@@ -65,6 +70,7 @@ local function create_transparent_top_right_config(zindex)
     anchor = "NE",
     border = nil,
     zindex = zindex,
+    title = title,
   }
 end
 
@@ -110,13 +116,10 @@ local function create_centered_window()
 end
 
 --- @param config _99.window.Config
---- @param title string
---- @param enter boolean
---- @return _99.window.Window
-local function create_floating_window(config, title, enter)
-  local buf_id = vim.api.nvim_create_buf(false, true)
-  local win_id = vim.api.nvim_open_win(buf_id, enter, {
-    relative = "editor",
+--- @param title string?
+local function full_config(config, title)
+  return {
+    relative = config.relative or "editor",
     width = config.width,
     height = config.height,
     row = config.row or 0,
@@ -124,10 +127,20 @@ local function create_floating_window(config, title, enter)
     anchor = config.anchor,
     style = "minimal",
     border = config.border,
-    title = title,
+    title = title or config.title,
     title_pos = "center",
     zindex = config.zindex or 1,
-  })
+  }
+end
+
+--- @param config _99.window.Config
+--- @param title string
+--- @param enter boolean
+--- @return _99.window.Window
+local function create_floating_window(config, title, enter)
+  local buf_id = vim.api.nvim_create_buf(false, true)
+  local win_id =
+    vim.api.nvim_open_win(buf_id, enter, full_config(config, title))
   local window = {
     config = config,
     win_id = win_id,
@@ -197,7 +210,7 @@ end
 
 --- @param text string
 function M.display_cancellation_message(text)
-  local config = create_transparent_top_right_config(100)
+  local config = create_transparent_top_right_config(100, " 99 Cancelled ")
   local window = create_floating_window(config, " 99 Cancelled ", false)
   local lines = vim.split(text, "\n")
 
@@ -422,7 +435,7 @@ end
 --- @return _99.window.Window
 function M.status_window()
   M.clear_active_popups()
-  local config = create_transparent_top_right_config(100)
+  local config = create_transparent_top_right_config(100, " 99 - Status ")
   local window = create_floating_window(config, " 99 - Status ", false)
   return window
 end
@@ -435,7 +448,7 @@ function M.vertical_resize(win, height)
   end
   assert(M.is_active_window(win), "you cannot pass in an inactive window")
   win.config.height = height
-  vim.api.nvim_win_set_config(win.win_id, win.config)
+  vim.api.nvim_win_set_config(win.win_id, full_config(win.config))
 end
 
 --- @return boolean
@@ -478,5 +491,4 @@ function M.close(win)
     end
   end
 end
-
 return M
