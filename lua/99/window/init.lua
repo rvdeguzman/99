@@ -336,13 +336,14 @@ end
 --- @field on_load? fun(): nil
 --- @field rules _99.Agents.Rules
 
+--- @param name string
 --- @param opts _99.window.CaptureInputOpts
-function M.capture_input(opts)
+function M.capture_input(name, opts)
   M.clear_active_popups()
 
   local config = create_centered_window()
   local win = create_floating_window(config, {
-    title = " 99 Prompt ",
+    title = string.format(" 99 %s ", name),
     border = "rounded",
   })
   set_defaul_win_options(win, "99-prompt")
@@ -418,6 +419,10 @@ function M.clear_active_popups()
     window_close(window)
   end
   M.active_windows = {}
+end
+
+function M.status_window()
+  M.clear_active_popups()
 end
 
 return M

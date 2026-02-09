@@ -256,10 +256,11 @@ local function set_selection_marks()
 end
 
 --- @param cb fun(context: _99.RequestContext, o: _99.ops.Opts?): nil
+--- @param name string
 --- @param context _99.RequestContext
 --- @param opts _99.ops.Opts
-local function capture_prompt(cb, context, opts)
-  Window.capture_input({
+local function capture_prompt(cb, name, context, opts)
+  Window.capture_input(name, {
     --- @param ok boolean
     --- @param response string
     cb = function(ok, response)
@@ -331,7 +332,7 @@ function _99.search(opts)
     ops.search(context, o)
     return
   else
-    capture_prompt(ops.search, context, o)
+    capture_prompt(ops.search, "Search", context, o)
   end
 end
 
@@ -368,7 +369,7 @@ function _99.visual(opts)
   if opts.additional_prompt then
     perform_range()
   else
-    capture_prompt(perform_range, context, opts)
+    capture_prompt(perform_range, "Visual", context, opts)
   end
 end
 
