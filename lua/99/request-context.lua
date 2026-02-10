@@ -64,7 +64,8 @@ function RequestContext:add_agent_rules(rules)
   for _, rule in ipairs(rules) do
     -- Handle both string paths and rule objects
     self.logger:debug("adding custom rule to agent", "rule", rule)
-    local ok, file = pcall(io.open, rule.path, "r")
+    local file_path = rule.absolute_path or rule.path
+    local ok, file = pcall(io.open, file_path, "r")
     if ok and file then
       local content = file:read("*a")
       file:close()
@@ -88,6 +89,14 @@ function RequestContext:add_agent_rules(rules)
     else
       self.logger:debug("unable to read agent rule", "rule", rule)
     end
+  end
+end
+
+--- @param refs _99.Reference[]
+function RequestContext:add_references(refs)
+  for _, ref in ipairs(refs) do
+    self.logger:debug("adding reference to context")
+    table.insert(self.ai_context, ref.content)
   end
 end
 
@@ -127,6 +136,13 @@ end
 --- @param prompt string
 function RequestContext:save_prompt(prompt)
   local prompt_file = self.tmp_file .. "-prompt"
+
+  local dir = vim.fs.dirname(prompt_file)
+
+  if dir and not vim.uv.fs_stat(dir) then
+    pcall(vim.uv.fs_mkdir, dir, 493)
+  end
+
   local file = io.open(prompt_file, "w")
   if file then
     file:write(prompt)
