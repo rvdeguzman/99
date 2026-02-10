@@ -157,6 +157,16 @@ end)
 
 The selected model is used for all subsequent requests in the current session.
 
+### Telescope Provider Selector
+
+Switch between providers (OpenCode, Claude, Cursor, Kiro) without restarting Neovim. Switching provider also resets the model to that provider's default.
+
+```lua
+vim.keymap.set("n", "<leader>9p", function()
+  require("99.extensions.telescope").select_provider()
+end)
+```
+
 ## API
 You can see the full api at [99 API](./lua/99/init.lua)
 
