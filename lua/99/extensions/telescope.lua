@@ -1,4 +1,4 @@
-local _99 = require("99")
+local pickers_util = require("99.extensions.pickers")
 
 local M = {}
 
@@ -16,18 +16,7 @@ end
 
 --- @param provider _99.Providers.BaseProvider?
 function M.select_model(provider)
-  provider = provider or _99.get_provider()
-
-  provider.fetch_models(function(models, err)
-    if err then
-      vim.notify("99: " .. err, vim.log.levels.ERROR)
-      return
-    end
-    if not models or #models == 0 then
-      vim.notify("99: No models available", vim.log.levels.WARN)
-      return
-    end
-
+  pickers_util.get_models(provider, function(models, current)
     local ok, pickers = pcall(require, "telescope.pickers")
     if not ok then
       vim.notify(
@@ -42,8 +31,6 @@ function M.select_model(provider)
     local actions = require("telescope.actions")
     local action_state = require("telescope.actions.state")
 
-    local current = _99.get_model()
-
     pickers
       .new({}, {
         prompt_title = "99: Select Model (current: " .. current .. ")",
@@ -57,8 +44,7 @@ function M.select_model(provider)
             if not selection then
               return
             end
-            _99.set_model(selection[1])
-            vim.notify("99: Model set to " .. selection[1])
+            pickers_util.on_model_selected(selection[1])
           end)
           return true
         end,
@@ -82,22 +68,13 @@ function M.select_provider()
   local actions = require("telescope.actions")
   local action_state = require("telescope.actions.state")
 
-  local providers = _99.Providers
-  local names = {}
-  local lookup = {}
-  for name, provider in pairs(providers) do
-    table.insert(names, name)
-    lookup[name] = provider
-  end
-  table.sort(names)
-
-  local current = _99.get_provider()._get_provider_name()
+  local info = pickers_util.get_providers()
 
   pickers
     .new({}, {
-      prompt_title = "99: Select Provider (current: " .. current .. ")",
-      default_selection_index = index_of(names, current),
-      finder = finders.new_table({ results = names }),
+      prompt_title = "99: Select Provider (current: " .. info.current .. ")",
+      default_selection_index = index_of(info.names, info.current),
+      finder = finders.new_table({ results = info.names }),
       sorter = conf.generic_sorter({}),
       attach_mappings = function(prompt_bufnr)
         actions.select_default:replace(function()
@@ -106,15 +83,7 @@ function M.select_provider()
           if not selection then
             return
           end
-          local chosen = lookup[selection[1]]
-          _99.set_provider(chosen)
-          vim.notify(
-            "99: Provider set to "
-              .. selection[1]
-              .. " (model: "
-              .. _99.get_model()
-              .. ")"
-          )
+          pickers_util.on_provider_selected(selection[1], info.lookup)
         end)
         return true
       end,

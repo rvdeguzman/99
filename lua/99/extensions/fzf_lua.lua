@@ -1,4 +1,4 @@
-local _99 = require("99")
+local pickers_util = require("99.extensions.pickers")
 
 local M = {}
 
@@ -24,18 +24,7 @@ end
 
 --- @param provider _99.Providers.BaseProvider?
 function M.select_model(provider)
-  provider = provider or _99.get_provider()
-
-  provider.fetch_models(function(models, err)
-    if err then
-      vim.notify("99: " .. err, vim.log.levels.ERROR)
-      return
-    end
-    if not models or #models == 0 then
-      vim.notify("99: No models available", vim.log.levels.WARN)
-      return
-    end
-
+  pickers_util.get_models(provider, function(models, current)
     local ok, fzf = pcall(require, "fzf-lua")
     if not ok then
       vim.notify(
@@ -45,8 +34,6 @@ function M.select_model(provider)
       return
     end
 
-    local current = _99.get_model()
-
     fzf.fzf_exec(promote_current(models, current), {
       prompt = "99: Select Model (current: " .. current .. ")> ",
       actions = {
@@ -54,8 +41,7 @@ function M.select_model(provider)
           if not selected or #selected == 0 then
             return
           end
-          _99.set_model(selected[1])
-          vim.notify("99: Model set to " .. selected[1])
+          pickers_util.on_model_selected(selected[1])
         end,
       },
     })
@@ -72,33 +58,16 @@ function M.select_provider()
     return
   end
 
-  local providers = _99.Providers
-  local names = {}
-  local lookup = {}
-  for name, provider in pairs(providers) do
-    table.insert(names, name)
-    lookup[name] = provider
-  end
-  table.sort(names)
+  local info = pickers_util.get_providers()
 
-  local current = _99.get_provider()._get_provider_name()
-
-  fzf.fzf_exec(promote_current(names, current), {
-    prompt = "99: Select Provider (current: " .. current .. ")> ",
+  fzf.fzf_exec(promote_current(info.names, info.current), {
+    prompt = "99: Select Provider (current: " .. info.current .. ")> ",
     actions = {
       ["enter"] = function(selected)
         if not selected or #selected == 0 then
           return
         end
-        local chosen = lookup[selected[1]]
-        _99.set_provider(chosen)
-        vim.notify(
-          "99: Provider set to "
-            .. selected[1]
-            .. " (model: "
-            .. _99.get_model()
-            .. ")"
-        )
+        pickers_util.on_provider_selected(selected[1], info.lookup)
       end,
     },
   })
