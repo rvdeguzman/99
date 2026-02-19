@@ -236,10 +236,43 @@ function KiroProvider._get_default_model()
   return "claude-sonnet-4.5"
 end
 
+--- @class GeminiCLIProvider : _99.Providers.BaseProvider
+local GeminiCLIProvider = setmetatable({}, { __index = BaseProvider })
+
+--- @param query string
+--- @param request _99.Request
+--- @return string[]
+function GeminiCLIProvider._build_command(_, query, request)
+  return {
+    "gemini",
+    "--approval-mode",
+    -- Allow writing to temp files by default. See:
+    -- https://geminicli.com/docs/core/policy-engine/#default-policies
+    "auto_edit",
+    "--model",
+    request.context.model,
+    "--prompt",
+    query,
+  }
+end
+
+--- @return string
+function GeminiCLIProvider._get_provider_name()
+  return "GeminiCLIProvider"
+end
+
+--- @return string
+function GeminiCLIProvider._get_default_model()
+  -- Default to auto-routing between pro and flash. See:
+  -- https://geminicli.com/docs/cli/model/
+  return "auto"
+end
+
 return {
   BaseProvider = BaseProvider,
   OpenCodeProvider = OpenCodeProvider,
   ClaudeCodeProvider = ClaudeCodeProvider,
   CursorAgentProvider = CursorAgentProvider,
   KiroProvider = KiroProvider,
+  GeminiCLIProvider = GeminiCLIProvider,
 }
