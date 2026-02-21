@@ -16,21 +16,21 @@ end
 
 --- @param provider _99.Providers.BaseProvider?
 function M.select_model(provider)
+  local ok, pickers = pcall(require, "telescope.pickers")
+  if not ok then
+    vim.notify(
+      "99: telescope.nvim is required for this extension",
+      vim.log.levels.ERROR
+    )
+    return
+  end
+
+  local finders = require("telescope.finders")
+  local conf = require("telescope.config").values
+  local actions = require("telescope.actions")
+  local action_state = require("telescope.actions.state")
+
   pickers_util.get_models(provider, function(models, current)
-    local ok, pickers = pcall(require, "telescope.pickers")
-    if not ok then
-      vim.notify(
-        "99: telescope.nvim is required for this extension",
-        vim.log.levels.ERROR
-      )
-      return
-    end
-
-    local finders = require("telescope.finders")
-    local conf = require("telescope.config").values
-    local actions = require("telescope.actions")
-    local action_state = require("telescope.actions.state")
-
     pickers
       .new({}, {
         prompt_title = "99: Select Model (current: " .. current .. ")",

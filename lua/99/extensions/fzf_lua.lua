@@ -20,16 +20,16 @@ end
 
 --- @param provider _99.Providers.BaseProvider?
 function M.select_model(provider)
-  pickers_util.get_models(provider, function(models, current)
-    local ok, fzf = pcall(require, "fzf-lua")
-    if not ok then
-      vim.notify(
-        "99: fzf-lua is required for this extension",
-        vim.log.levels.ERROR
-      )
-      return
-    end
+  local ok, fzf = pcall(require, "fzf-lua")
+  if not ok then
+    vim.notify(
+      "99: fzf-lua is required for this extension",
+      vim.log.levels.ERROR
+    )
+    return
+  end
 
+  pickers_util.get_models(provider, function(models, current)
     fzf.fzf_exec(promote_current(models, current), {
       prompt = "99: Select Model (current: " .. current .. ")> ",
       actions = {
