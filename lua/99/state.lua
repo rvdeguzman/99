@@ -135,8 +135,7 @@ function State:add_mark(mark)
   table.insert(self.__active_marks, mark)
 end
 
---- @param mark _99.Mark
-function State:clear_marks(mark)
+function State:clear_marks()
   for _, active_mark in ipairs(self.__active_marks or {}) do
     active_mark:delete()
   end
