@@ -147,6 +147,7 @@ See search for more details
 | `view_logs` | `fun(): nil` | - |
 | `stop_all_requests` | `fun(): nil` | - |
 | `clear_previous_requests` | `fun(): nil` | - |
+| `Extensions` | `_99.Extensions` | - |
 
 ### API
 
@@ -173,6 +174,35 @@ be killed (OpenCode) and any result will be discared
 
 #### clear_previous_requests
 clears all previous search and visual operations
+
+#### Extensions
+check out Worker for cool abstraction on search and vibe
+
+## _99.Extensions.Worker
+A persistent way to keep track of work.
+
+this will likely be where the most change and focus goes into.  I would like
+to take this into worktree territory and be able to swap between stuff super
+slick.
+
+Until then, it is going to be a single bit of work that you can provide
+the description and then use search to find what is left that needs to be done.
+
+### Description
+| Name | Type | Default Value |
+| --- | --- | --- |
+| `set_work` | `fun(opts?: _99.WorkOpts): nil` | - |
+| `search` | `fun(): nil` | - |
+
+### API
+
+#### set_work
+will set the work for the project.  If opts provide a description then no
+input capture of work description will be required
+
+#### search
+will use _99.search to find what is left to be done for this work item to be
+considered done
 
 ## _99.Options
 No description.
@@ -266,6 +296,19 @@ There are no properties yet.  But i would like to tweek some behavior based on o
 
 ### API
 No properties.
+
+## _99.WorkOpts
+No description.
+
+### Description
+| Name | Type | Default Value |
+| --- | --- | --- |
+| `description` | `string \| nil` | - |
+
+### API
+
+#### description
+No description.
 
 ## _99.Completion
 No description.
