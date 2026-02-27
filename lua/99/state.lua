@@ -1,3 +1,4 @@
+local utils = require("99.utils")
 local Agents = require("99.extensions.agents")
 local Extensions = require("99.extensions")
 
@@ -25,13 +26,8 @@ end
 --- @field prompts _99.Prompts
 --- @field ai_stdout_rows number
 --- @field display_errors boolean
---- @field in_flight_options _99.InFlight.Opts | nil
---- @field show_in_flight_requests_window _99.window.Window | nil
---- @field show_in_flight_requests_throbber _99.Throbber | nil
 --- @field provider_override _99.Providers.BaseProvider?
---- @field auto_add_skills boolean
 --- @field rules _99.Agents.Rules
---- @field __view_log_idx number
 --- @field __request_history _99.Prompt[]
 --- @field __request_by_id table<number, _99.Prompt>
 --- @field __active_marks _99.Mark[]
@@ -44,41 +40,59 @@ local function create()
   return {
     model = "opencode/claude-sonnet-4-5",
     md_files = {},
-    prompts = require("99.prompt-settings"),
     ai_stdout_rows = 3,
     display_errors = false,
     provider_override = nil,
-    auto_add_skills = false,
-    __view_log_idx = 1,
     __request_history = {},
     __request_by_id = {},
     tmp_dir = nil,
   }
 end
 
+--- @param oos _99.Options | _99.State
+local function get_tmp_dir(oos)
+  local tmp_dir = oos.tmp_dir and type(oos.tmp_dir) == "string" and oos.tmp_dir
+    or oos.__tmp_dir and oos.__tmp_dir
+    or "./tmp"
+  if tmp_dir then
+    tmp_dir = vim.fn.expand(tmp_dir)
+  end
+  return tmp_dir
+end
+
+--- @param opts _99.Options
+--- @return _99.StateProps | nil
+local function read_state_from_tmp(opts)
+  local state_file = utils.named_tmp_file(get_tmp_dir(opts), "99-state")
+  local fd = vim.uv.fs_open(state_file, "r", 438)
+  if not fd then
+    return nil
+  end
+  return utils.read_file_json_safe(state_file) --[[@as _99.StateProps]]
+end
+
 --- @param opts _99.Options
 --- @return _99.State
 function State.new(opts)
-  local props = create()
+  local props = read_state_from_tmp(opts) or create()
   local _99_state = setmetatable(props, State) --[[@as _99.State]]
 
   _99_state.in_flight_options = opts.in_flight_options or { enable = true }
   _99_state.provider_override = opts.provider
   _99_state.completion = opts.completion or default_completion()
   _99_state.completion.custom_rules = _99_state.completion.custom_rules or {}
-  _99_state.auto_add_skills = opts.auto_add_skills or false
   _99_state.completion.files = _99_state.completion.files or {}
+
+  --- TODO: Prompt overrides would be a great thing, we just have to get there
+  --- for now, i am going to have this as just a hardcoded ... thing
+  _99_state.prompts = require("99.prompt-settings")
 
   return _99_state
 end
 
 --- @return string
 function State:tmp_dir()
-  local tmp_dir = self.__tmp_dir or "./tmp"
-  if tmp_dir then
-    tmp_dir = vim.fn.expand(tmp_dir)
-  end
-  return tmp_dir
+  return get_tmp_dir(self)
 end
 
 --- TODO: This is something to understand.  I bet that this is going to need

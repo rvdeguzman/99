@@ -1,3 +1,28 @@
+* vibe and search sessions.  we sometimes need to call a session and ask for a follow up about what happpened for more changes.
+ * how to get that?
+ * opencode run --format json --agent build -m openai/gpt-5.3-codex "your prompt" > /tmp/opencode.jsonl
+ * SESSION_ID=$(jq -r 'select(.sessionID != null) | .sessionID' /tmp/opencode.jsonl | head -n1)
+ * opencode run --session "$SESSION_ID" --agent build -m openai/gpt-5.3-codex "follow-up prompt"
+
+```bash
+Yes — that is exactly what opencode serve is for.
+- Run one long-lived headless server process.
+- Send many opencode run requests to it via --attach.
+- Keep using the same sessionID with --session for follow-ups.
+# 1) Start persistent headless server (once)
+export OPENCODE_SERVER_PASSWORD='change-me'
+opencode serve --hostname 127.0.0.1 --port 4096
+# 2) First query (machine-readable)
+opencode run --attach http://127.0.0.1:4096 --format json "first prompt"
+# JSON events include: "sessionID":"ses_..."
+# 3) Follow-up on same conversation
+opencode run --attach http://127.0.0.1:4096 --session ses_... --format json "follow-up prompt"
+Notes:
+- --continue works too (uses most recent session), but --session is safest for automation.
+- If you want interactive rejoin, use opencode attach http://127.0.0.1:4096 --session ses_....
+- Set OPENCODE_SERVER_PASSWORD (otherwise server is unsecured).
+```
+
 * if there is an active window, that is not a status window, open, then results should not be opened until that is closed.
  * we need effetively an action queue along with window lifecycle functions
 * i need a way to pring up past vibe sessions that were failed or cancelled so i can use that text again.
@@ -12,14 +37,6 @@
 * Search item navigation.  We should just be able to next("search") to navigate the searches
  * tutorials, searches, and visuals should all have their own history
  * clean history should be on a vertical as well
-* Vibe Work
- * takes the search results and asks the AI to implement those changes.
- * this should use the new "vibe" interface i want to make
- * something i have ran into, maybe its useful, but being able to do the following
-   * search -> partial select -> vibe
-* vibe interface
- * makes changes, and then describes each edit in a tmp file such that it can be loaded into memory and transfered to quickfixlist
- * be able to have a diff view?  live view toggle?
 * state of state
  * maybe this needs to be persisted as json in a tmp file such that we can restore it upon opening.  I could see this being super useful
 * some sort of interface that i can peruse the types of requests made
@@ -36,3 +53,15 @@
  * adds the fields one at a time
 * worktrees: I feel that i could turn a lot of this into a work tree way
  * this would effectively make it so that running a bunch of parallel requests and changes do not have to become completely ruined, but instead we have everything mergeable and resolveable.  I think that this could "be the future" of this plugin
+
+### Unplanned for now, but interesting to think about as things improve
+or my skill set improves...
+
+* Vibe Work
+ * takes the search results and asks the AI to implement those changes.
+ * this should use the new "vibe" interface i want to make
+ * something i have ran into, maybe its useful, but being able to do the following
+   * search -> partial select -> vibe
+* vibe interface
+ * makes changes, and then describes each edit in a tmp file such that it can be loaded into memory and transfered to quickfixlist
+ * be able to have a diff view?  live view toggle?

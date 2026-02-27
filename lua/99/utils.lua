@@ -40,4 +40,21 @@ function M.named_tmp_file(dir, name)
   return string.format("%s/99-%s", dir, name)
 end
 
+--- @param path string
+--- @return table | nil
+function M.read_file_json_safe(path)
+  local ok, fh = pcall(io.open, path, "r")
+  if ok and fh then
+    local ok2, content = pcall(fh.read, fh, "*a")
+    pcall(fh.close, fh)
+    if not ok2 then
+      return nil
+    end
+    local ok3, obj = pcall(vim.json, content)
+    if ok3 and obj then
+      return obj
+    end
+  end
+end
+
 return M

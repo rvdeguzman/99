@@ -5,7 +5,7 @@ local Logger = require("99.logger.logger")
 local Level = require("99.logger.level")
 local ops = require("99.ops")
 local Window = require("99.window")
-local show_in_flight_requests = require("99.window.in-flight")
+local StatusWindow = require("99.window.status-window")
 local Prompt = require("99.prompt")
 local State = require("99.state")
 local Extensions = require("99.extensions")
@@ -49,7 +49,7 @@ end
 --- @docs base
 --- @field logger? _99.Logger.Options
 --- @field model? string
---- @field in_flight_options? _99.InFlight.Opts
+--- @field in_flight_options? _99.StatusWindow.Opts
 --- @field md_files? string[]
 --- @field provider? _99.Providers.BaseProvider
 --- @field display_errors? boolean
@@ -496,7 +496,8 @@ function _99.setup(opts)
   Extensions.init(_99_state)
   Extensions.capture_project_root()
 
-  show_in_flight_requests(_99_state, _99_state.in_flight_options)
+  local sw = StatusWindow.new(_99_state, opts.in_flight_options)
+  sw:start()
 end
 
 --- @param md string

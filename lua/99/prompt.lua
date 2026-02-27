@@ -51,7 +51,7 @@ local filetype_map = {
 --- @field xid number TODO: we should probably get rid of this.  The request pattern is not quite correct
 --- @field tutorial string[]
 
---- @class _99.Prompt
+--- @class _99.Prompt.Properties
 --- @field md_file_names string[]
 --- @field model string
 --- @field user_prompt string
@@ -65,6 +65,8 @@ local filetype_map = {
 --- @field marks table<string, _99.Mark>
 --- @field logger _99.Logger
 --- @field xid number
+
+--- @class _99.Prompt : _99.Prompt.Properties
 --- @field clean_ups (fun(): nil)[]
 --- @field _99 _99.State
 ---@diagnostic disable-next-line: undefined-doc-name
