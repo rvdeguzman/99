@@ -63,8 +63,8 @@ function BaseProvider:make_request(query, context, observer)
   logger:debug("make_request", "tmp_file", context.tmp_file)
 
   local once_complete = once(
-  --- @param status "success" | "failed" | "cancelled"
-  ---@param text string
+    --- @param status "success" | "failed" | "cancelled"
+    ---@param text string
     function(status, text)
       observer.on_complete(status, text)
     end
@@ -112,7 +112,7 @@ function BaseProvider:make_request(query, context, observer)
       end
       if obj.code ~= 0 then
         local str =
-            string.format("process exit code: %d\n%s", obj.code, vim.inspect(obj))
+          string.format("process exit code: %d\n%s", obj.code, vim.inspect(obj))
         once_complete("failed", str)
         logger:fatal(
           self:_get_provider_name() .. " make_query failed",

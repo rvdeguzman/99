@@ -7,7 +7,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "anthropic/claude-sonnet-4-5" }
       local cmd =
-          Providers.OpenCodeProvider._build_command(nil, "test query", request)
+        Providers.OpenCodeProvider._build_command(nil, "test query", request)
       eq({
         "opencode",
         "run",
@@ -31,7 +31,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "anthropic/claude-sonnet-4-5" }
       local cmd =
-          Providers.ClaudeCodeProvider._build_command(nil, "test query", request)
+        Providers.ClaudeCodeProvider._build_command(nil, "test query", request)
       eq({
         "claude",
         "--dangerously-skip-permissions",
@@ -51,7 +51,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "anthropic/claude-sonnet-4-5" }
       local cmd =
-          Providers.CursorAgentProvider._build_command(nil, "test query", request)
+        Providers.CursorAgentProvider._build_command(nil, "test query", request)
       eq({
         "cursor-agent",
         "--model",
@@ -70,7 +70,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "gemini-2.5-pro" }
       local cmd =
-          Providers.GeminiCLIProvider._build_command(nil, "test query", request)
+        Providers.GeminiCLIProvider._build_command(nil, "test query", request)
       eq({
         "gemini",
         "--approval-mode",
