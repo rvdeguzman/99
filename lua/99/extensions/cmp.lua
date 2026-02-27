@@ -37,7 +37,7 @@ function CmpSource.complete(_, params, callback)
   -- Find which trigger is active
   local trigger = nil
   for _, char in ipairs(Completions.get_trigger_characters()) do
-    local pattern = char:gsub("([%%%^%$%(%)%.%[%]%*%+%-%?])", "%%%1") .. "%S*$"
+    local pattern = Completions.escape_pattern(char) .. "%S*$"
     if before:match(pattern) then
       trigger = char
       break

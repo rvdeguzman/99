@@ -14,6 +14,13 @@ local providers = {}
 
 local M = {}
 
+--- Escape special Lua pattern characters in a string
+--- @param str string The string to escape
+--- @return string The escaped string safe for use in Lua patterns
+function M.escape_pattern(str)
+  return str:gsub("([%%%^%$%(%)%.%[%]%*%+%-%?])", "%%%1")
+end
+
 --- @param provider _99.CompletionProvider
 function M.register(provider)
   for i, p in ipairs(providers) do
@@ -48,10 +55,7 @@ end
 function M.parse(prompt_text)
   local refs = {}
   for _, provider in ipairs(providers) do
-    local pattern = provider.trigger:gsub(
-      "([%%%^%$%(%)%.%[%]%*%+%-%?])",
-      "%%%1"
-    ) .. "%S+"
+    local pattern = M.escape_pattern(provider.trigger) .. "%S+"
     for word in prompt_text:gmatch(pattern) do
       local token = word:sub(#provider.trigger + 1)
       if provider.is_valid(token) then
