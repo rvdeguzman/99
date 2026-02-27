@@ -7,7 +7,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "anthropic/claude-sonnet-4-5" }
       local cmd =
-        Providers.OpenCodeProvider._build_command(nil, "test query", request)
+          Providers.OpenCodeProvider._build_command(nil, "test query", request)
       eq({
         "opencode",
         "run",
@@ -31,7 +31,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "anthropic/claude-sonnet-4-5" }
       local cmd =
-        Providers.ClaudeCodeProvider._build_command(nil, "test query", request)
+          Providers.ClaudeCodeProvider._build_command(nil, "test query", request)
       eq({
         "claude",
         "--dangerously-skip-permissions",
@@ -51,7 +51,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "anthropic/claude-sonnet-4-5" }
       local cmd =
-        Providers.CursorAgentProvider._build_command(nil, "test query", request)
+          Providers.CursorAgentProvider._build_command(nil, "test query", request)
       eq({
         "cursor-agent",
         "--model",
@@ -70,7 +70,7 @@ describe("providers", function()
     it("builds correct command with model", function()
       local request = { model = "gemini-2.5-pro" }
       local cmd =
-        Providers.GeminiCLIProvider._build_command(nil, "test query", request)
+          Providers.GeminiCLIProvider._build_command(nil, "test query", request)
       eq({
         "gemini",
         "--approval-mode",
@@ -84,6 +84,25 @@ describe("providers", function()
 
     it("has correct default model", function()
       eq("auto", Providers.GeminiCLIProvider._get_default_model())
+    end)
+  end)
+
+  describe("GitHubCopilotProvider", function()
+    it("builds correct command with model", function()
+      local request = { model = "claude-sonnet-4.5" }
+      local cmd =
+          Providers.GitHubCopilotProvider._build_command(nil, "test query", request)
+      eq({
+        "copilot",
+        "--model",
+        "claude-sonnet-4.5",
+        "--prompt",
+        "test query",
+      }, cmd)
+    end)
+
+    it("has correct default model", function()
+      eq("claude-sonnet-4.5", Providers.GitHubCopilotProvider._get_default_model())
     end)
   end)
 
@@ -140,6 +159,17 @@ describe("providers", function()
       end
     )
 
+    it(
+      "uses GitHubCopilotProvider default model when provider specified but no model",
+      function()
+        local _99 = require("99")
+
+        _99.setup({ provider = Providers.GitHubCopilotProvider })
+        local state = _99.__get_state()
+        eq("claude-sonnet-4.5", state.model)
+      end
+    )
+
     it("uses custom model when both provider and model specified", function()
       local _99 = require("99")
 
@@ -158,6 +188,7 @@ describe("providers", function()
       eq("function", type(Providers.ClaudeCodeProvider.make_request))
       eq("function", type(Providers.CursorAgentProvider.make_request))
       eq("function", type(Providers.GeminiCLIProvider.make_request))
+      eq("function", type(Providers.GitHubCopilotProvider.make_request))
     end)
   end)
 end)
