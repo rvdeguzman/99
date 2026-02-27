@@ -50,7 +50,7 @@ function M.read_file_json_safe(path)
     if not ok2 then
       return nil
     end
-    local ok3, obj = pcall(vim.json, content)
+    local ok3, obj = pcall(vim.json.decode, content)
     if ok3 and obj then
       return obj
     end
