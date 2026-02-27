@@ -94,6 +94,7 @@ describe("providers", function()
           Providers.GitHubCopilotProvider._build_command(nil, "test query", request)
       eq({
         "copilot",
+        "--allow-all-tools",
         "--model",
         "claude-sonnet-4.5",
         "--prompt",

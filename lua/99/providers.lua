@@ -334,6 +334,7 @@ local GitHubCopilotProvider = setmetatable({}, { __index = BaseProvider })
 function GitHubCopilotProvider._build_command(_, query, context)
   return {
     "copilot",
+    "--allow-all-tools",
     "--model",
     context.model,
     "--prompt",
