@@ -4,7 +4,6 @@
 local Logger = require("99.logger.logger")
 local Level = require("99.logger.level")
 local ops = require("99.ops")
-local Languages = require("99.language")
 local Window = require("99.window")
 local show_in_flight_requests = require("99.window.in-flight")
 local Prompt = require("99.prompt")
@@ -494,7 +493,6 @@ function _99.setup(opts)
 
   _99_state.display_errors = opts.display_errors or false
   _99_state:refresh_rules()
-  Languages.initialize(_99_state)
   Extensions.init(_99_state)
   Extensions.capture_project_root()
 

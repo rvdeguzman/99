@@ -10,7 +10,6 @@ end
 --- @field md_files string[]
 --- @field prompts _99.Prompts
 --- @field ai_stdout_rows number
---- @field languages string[]
 --- @field display_errors boolean
 --- @field auto_add_skills boolean
 --- @field provider_override _99.Providers.BaseProvider | nil
@@ -25,7 +24,6 @@ end
 --- @field md_files string[]
 --- @field prompts _99.Prompts
 --- @field ai_stdout_rows number
---- @field languages string[]
 --- @field display_errors boolean
 --- @field in_flight_options _99.InFlight.Opts | nil
 --- @field show_in_flight_requests_window _99.window.Window | nil
@@ -48,7 +46,6 @@ local function create()
     md_files = {},
     prompts = require("99.prompt-settings"),
     ai_stdout_rows = 3,
-    languages = { "lua", "go", "java", "elixir", "cpp", "ruby" },
     display_errors = false,
     provider_override = nil,
     auto_add_skills = false,
