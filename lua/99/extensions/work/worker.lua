@@ -108,31 +108,18 @@ end
 function M.craft_prompt(worker)
   return string.format(
     [[
-<YourGoal>
-<OrderedSteps>
-<Step>
-Inspect and understand all changed code
-* git diff
-* git diff --staged
-* commits that have not been pushed to remote
-</Step>
+## You must complete the checklist
+[ ] - Inspect and understand all changed code
+ [ ] - git diff
+ [ ] - git diff --staged
+ [ ] - commits that have not been pushed to remote
+[ ] - Take the current pending and commited changes and figure out what is left
+      to change to complete the work item. The work item is described in <Description>
+[ ] - Carefully review all the changes and <Description> before you respond.
+      respond with proper Search Format described in <Rule> and an example in <Output>
+[ ] - If you see bugs, also report those
+[ ] - if there are tests, run the tests
 
-<Step>
-Take the current pending and commited changes and figure out what is
-left to change to complete the work item. The work item is described in <Description>
-
-Carefully review all the changes and <Description> before you respond.
-respond with proper Search Format described in <Rule> and an example in <Output>
-
-If you see bugs, also report those
-</Step>
-
-<Step>
-if there are steps to test the project.  run the tests and add to the list the failures
-and how to fix them
-</Step>
-</OrderedSteps>
-</YourGoal>
 <Description>
 %s
 </Description>
@@ -151,6 +138,20 @@ function M.search()
   )
 
   M.last_work_search = _99.search({
+    additional_prompt = M.craft_prompt(M),
+  })
+end
+
+function M.vibe()
+  local _99 = require("99")
+  hydrate_current_work_item()
+
+  assert(
+    M.current_work_item,
+    'you must call "set_work" and set your current work item before calling this'
+  )
+
+  M.last_work_search = _99.vibe({
     additional_prompt = M.craft_prompt(M),
   })
 end

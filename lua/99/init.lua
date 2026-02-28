@@ -2,6 +2,7 @@
 --- task for me to do in the future to make this a bit more clean and only have
 --- stuff that makes sense for the api to be in here... but for now.. ia m sorry
 local Logger = require("99.logger.logger")
+local Tracking = require("99.state.tracking")
 local Level = require("99.logger.level")
 local ops = require("99.ops")
 local Window = require("99.window")
@@ -198,8 +199,8 @@ local _99_state
 --- takes your current selection and sends that along with the prompt provided and replaces
 --- your visual selection with the results
 --- @field view_logs fun(): nil
---- views the most recent logs and setups the machine to view older and new logs
---- this is still pretty rough and will change in the near future
+--- views the most recent logs.  we dont have a way to view older logs in a reasonable right now
+--- I want to rework the log viewing
 --- @field stop_all_requests fun(): nil
 --- stops all in flight requests.  this means that the underlying process will
 --- be killed (OpenCode) and any result will be discared
@@ -214,6 +215,39 @@ local _99 = {
   ERROR = Level.ERROR,
   FATAL = Level.FATAL,
 }
+
+--- @param requests _99.Prompt[]
+---@param cb fun(r: _99.Prompt): nil
+local function capture_request(requests, cb)
+  local str_requests = Tracking.to_selectable_list(requests)
+
+  Window.capture_select_input("99 Select Request", {
+    content = str_requests,
+    cb = function(success, result)
+      if not success or result == "" then
+        return
+      end
+
+      local idx = tonumber(vim.fn.matchstr(result, "^\\d\\+"))
+      if idx == nil then
+        return
+      end
+      local r = requests[idx]
+      if not r then
+        print(
+          "request not found... potentially report bug: " .. vim.inspect(idx)
+        )
+        return
+      end
+      assert(
+        r:valid(),
+        "request is not valid... not sure how we got here.  please report bug and this word: "
+          .. vim.inspect(r.operation)
+      )
+      cb(r)
+    end,
+  })
+end
 
 --- @param cb fun(context: _99.Prompt, o: _99.ops.Opts?): nil
 --- @param name string
@@ -284,46 +318,18 @@ end
 
 function _99.open()
   local requests = _99_state.tracking:successful()
-  local str_requests = {}
-  for i, r in ipairs(requests) do
-    table.insert(str_requests, string.format("%d: %s", i, r:summary()))
-  end
-
-  Window.capture_select_input("99", {
-    content = str_requests,
-    cb = function(success, result)
-      if not success or result == "" then
-        return
-      end
-
-      local idx = tonumber(vim.fn.matchstr(result, "^\\d\\+"))
-      if idx == nil then
-        return
-      end
-      local r = requests[idx]
-      if not r then
-        print(
-          "request not found... potentially report bug: " .. vim.inspect(idx)
-        )
-        return
-      end
-      assert(
-        r:valid(),
-        "request is not valid... not sure how we got here.  please report bug and this word: "
-          .. vim.inspect(r.operation)
-      )
-      if r.operation == "visual" then
-        --- TODO: this is its own work item for being able to have a global mark
-        --- section in which i keep track of marks for the lifetime of the
-        --- editor and when you close the editor, then it should lose them
-        print("visual not supported: i will figure this out... at some point")
-      elseif r.operation == "search" or r.operation == "vibe" then
-        _99.open_qfix_for_request(r)
-      elseif r.operation == "tutorial" then
-        _99.open_tutorial(r)
-      end
-    end,
-  })
+  capture_request(requests, function(r)
+    if r.operation == "visual" then
+      --- TODO: this is its own work item for being able to have a global mark
+      --- section in which i keep track of marks for the lifetime of the
+      --- editor and when you close the editor, then it should lose them
+      print("visual not supported: i will figure this out... at some point")
+    elseif r.operation == "search" or r.operation == "vibe" then
+      _99.open_qfix_for_request(r)
+    elseif r.operation == "tutorial" then
+      _99.open_tutorial(r)
+    end
+  end)
 end
 
 --- @param opts? _99.ops.Opts
@@ -380,36 +386,15 @@ function _99.visual(opts)
   return context.xid
 end
 
---- View all the logs that are currently cached.  Cached log count is determined
---- by _99.Logger.Options that are passed in.
 function _99.view_logs()
-  _99_state.__view_log_idx = 1
-  local logs = Logger.logs()
-  if #logs == 0 then
-    print("no logs to display")
-    return
-  end
-  Window.display_full_screen_message(logs[1])
-end
-
-function _99.prev_request_logs()
-  local logs = Logger.logs()
-  if #logs == 0 then
-    print("no logs to display")
-    return
-  end
-  _99_state.__view_log_idx = math.min(_99_state.__view_log_idx + 1, #logs)
-  Window.display_full_screen_message(logs[_99_state.__view_log_idx])
-end
-
-function _99.next_request_logs()
-  local logs = Logger.logs()
-  if #logs == 0 then
-    print("no logs to display")
-    return
-  end
-  _99_state.__view_log_idx = math.max(_99_state.__view_log_idx - 1, 1)
-  Window.display_full_screen_message(logs[_99_state.__view_log_idx])
+  local requests = _99_state.tracking.history
+  capture_request(requests, function(r)
+    local logs = Logger.logs_by_id(r.xid)
+    if logs == nil then
+      logs = { "No logs found for request: " .. r.xid }
+    end
+    Window.display_full_screen_message(logs)
+  end)
 end
 
 --- @param request _99.Prompt

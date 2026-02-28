@@ -277,6 +277,12 @@ function Logger.logs()
   return out
 end
 
+--- @param xid number
+--- @return string[] | nil
+function Logger.logs_by_id(xid)
+  return logger_cache[xid]
+end
+
 --- @param level number
 ---@param msg string
 ---@param ... any

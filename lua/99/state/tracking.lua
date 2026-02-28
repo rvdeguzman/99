@@ -197,4 +197,14 @@ function Tracking.setup(opts)
   end
 end
 
+--- @param requests _99.Prompt[]
+--- @return string[]
+function Tracking.to_selectable_list(requests)
+  local str_requests = {}
+  for i, r in ipairs(requests) do
+    table.insert(str_requests, string.format("%d: %s", i, r:summary()))
+  end
+  return str_requests
+end
+
 return Tracking
