@@ -1,86 +1,60 @@
 -- luacheck: globals describe it assert
-local Prompt = require("99.prompt")
+local _99 = require("99")
 local Tracking = require("99.state.tracking")
+local test_utils = require("99.test.test_utils")
 local eq = assert.are.same
 
-local function data_for(operation)
-  if operation == "tutorial" then
-    return {
-      type = "tutorial",
-      xid = 1,
-      buffer = 0,
-      window = 0,
-      tutorial = {},
-    }
-  end
-
-  if operation == "visual" then
-    return {
-      type = "visual",
-      buffer = 0,
-      file_type = "lua",
-      range = {
-        start_row = 1,
-        start_col = 1,
-        end_row = 1,
-        end_col = 1,
-      },
-    }
-  end
-
-  if operation == "vibe" then
-    return {
-      type = "vibe",
-      response = "",
-      qfix_items = {},
-    }
-  end
-
-  return {
-    type = "search",
-    response = "",
-    qfix_items = {},
-  }
-end
-
-local function track_request(state, operation, started_at, status)
-  local prompt = Prompt.deserialize(state, {
-    user_prompt = string.format("%s-%d", operation, started_at),
-    data = data_for(operation),
-  })
-  prompt.started_at = started_at
-  prompt.state = status
-  state.tracking:track(prompt)
+local function run(provider, operation, status, prompt)
+  _99[operation]({ additional_prompt = prompt })
+  provider:resolve(status, "result")
 end
 
 describe("tracking", function()
-  it("serialize respects Tracking.serialized_counts", function()
-    local state = {}
-    state.tracking = Tracking.new(state, nil)
+  it("serializes requests based on configured counts", function()
+    local previous_counts = vim.deepcopy(Tracking.__config.serialize_count)
+    Tracking.setup({
+      serialize_counts = {
+        vibe = 1,
+        search = 1,
+        tutorial = 3,
+        visual = 0,
+      },
+    })
 
-    local expected_total = 0
-    local started_at = 0
-    for operation, count in pairs(Tracking.serialize_counts) do
-      expected_total = expected_total + count
-      for _ = 1, count + 2 do
-        started_at = started_at + 1
-        track_request(state, operation, started_at, "success")
-      end
+    local provider = test_utils.TestProvider.new()
+    _99.setup(test_utils.get_test_setup_options({
+      in_flight_options = { enable = false },
+    }, provider))
+    test_utils.create_file({ "local value = 1" }, "lua", 1, 0)
 
-      started_at = started_at + 1
-      track_request(state, operation, started_at, "failed")
-    end
+    run(provider, "search", "success", "search one")
+    run(provider, "search", "success", "search two")
+    run(provider, "vibe", "success", "vibe one")
+    run(provider, "vibe", "success", "vibe two")
+    run(provider, "tutorial", "success", "tutorial one")
+    run(provider, "tutorial", "success", "tutorial two")
+    run(provider, "tutorial", "success", "tutorial three")
+    run(provider, "tutorial", "success", "tutorial four")
+    run(provider, "search", "failed", "search failed")
 
-    local serialized = state.tracking:serialize()
-    local actual_counts = {}
+    local serialized = _99.__get_state().tracking:serialize()
+    local actual_counts = {
+      search = 0,
+      vibe = 0,
+      tutorial = 0,
+      visual = 0,
+    }
+
     for _, request in ipairs(serialized.requests) do
-      local operation = request.data.type
-      actual_counts[operation] = (actual_counts[operation] or 0) + 1
+      actual_counts[request.data.type] = actual_counts[request.data.type] + 1
     end
 
-    eq(expected_total, #serialized.requests)
-    for operation, count in pairs(Tracking.serialize_counts) do
-      eq(count, actual_counts[operation] or 0)
-    end
+    eq(1, actual_counts.search)
+    eq(1, actual_counts.vibe)
+    eq(3, actual_counts.tutorial)
+    eq(0, actual_counts.visual)
+    eq(5, #serialized.requests)
+
+    Tracking.__config.serialize_count = previous_counts
   end)
 end)

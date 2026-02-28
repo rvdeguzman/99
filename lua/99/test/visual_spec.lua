@@ -61,7 +61,7 @@ describe("visual", function()
 
     visual_call_with_range(context, range)
 
-    eq(1, state:active_request_count())
+    eq(1, state.tracking:active_count())
     eq(content, r(buffer))
 
     p:resolve("success", "    return 'implemented!'")
@@ -74,6 +74,7 @@ describe("visual", function()
     }
     eq(expected_state, r(buffer))
     -- Note: Not checking active_request_count() == 0 due to logger bug with "id" key collision
+    -- TODO: validate if this is true..
   end)
 
   it("should handle multi-line replacement", function()
@@ -90,7 +91,7 @@ describe("visual", function()
 
     visual_call_with_range(context, range)
 
-    eq(1, state:active_request_count())
+    eq(1, state.tracking:active_count())
     eq(multi_line_content, r(buffer))
 
     p:resolve("success", "    local x = 1\n    local y = 2\n    return x + y")

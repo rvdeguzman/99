@@ -283,16 +283,12 @@ function _99.open_tutorial(context)
 end
 
 function _99.open()
-  local requests = _99_state.tracking.history
+  local requests = _99_state.tracking:successful()
   local str_requests = {}
-  for _, r in ipairs(requests) do
-    if r.state == "success" then
-      table.insert(str_requests, r:summary())
-    end
+  for i, r in ipairs(requests) do
+    table.insert(str_requests, string.format("%d: %s", i, r:summary()))
   end
-  for i = 1, #requests do
-    str_requests[i] = string.format("%d: %s", i, requests[i]:summary())
-  end
+
   Window.capture_select_input("99", {
     content = str_requests,
     cb = function(success, result)
@@ -301,10 +297,13 @@ function _99.open()
       end
 
       local idx = tonumber(vim.fn.matchstr(result, "^\\d\\+"))
+      if idx == nil then
+        return
+      end
       local r = requests[idx]
       if not r then
         print(
-          "somehow we have had a successful callback, but no request context... i honestly have no idea how we got here"
+          "request not found... potentially report bug: " .. vim.inspect(idx)
         )
         return
       end
@@ -426,11 +425,7 @@ function _99.open_qfix_for_request(request)
 end
 
 function _99.stop_all_requests()
-  for _, c in ipairs(_99_state.tracking.history) do
-    if c.state == "requesting" then
-      c:stop()
-    end
-  end
+  _99_state.tracking:stop_all_requests()
 end
 
 function _99.clear_previous_requests()

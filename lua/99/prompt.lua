@@ -113,24 +113,24 @@ end
 --- @param data _99.Prompt.Serialized
 --- @return _99.Prompt
 function Prompt.deserialize(_99, data)
-    local prompt = setmetatable({
-        _99 = _99,
-        data = data.data,
-        operation = data.data.type,
-        user_prompt = data.user_prompt,
-        started_at = Time.now(),
-        xid = get_id(),
-    }, Prompt)
-    assert(prompt:valid(), "prompt is not valid from data")
-    return prompt
+  local prompt = setmetatable({
+    _99 = _99,
+    data = data.data,
+    operation = data.data.type,
+    user_prompt = data.user_prompt,
+    started_at = Time.now(),
+    xid = get_id(),
+  }, Prompt)
+  assert(prompt:valid(), "prompt is not valid from data")
+  return prompt
 end
 
 --- @return _99.Prompt.Serialized
 function Prompt:serialize()
-    return {
-      data = self.data,
-      user_prompt = self.user_prompt,
-    }
+  return {
+    data = self.data,
+    user_prompt = self.user_prompt,
+  }
 end
 
 --- @param _99 _99.State
@@ -304,6 +304,10 @@ function Prompt:is_cancelled()
   return self.state == "cancelled"
 end
 
+function Prompt:is_completed()
+  return self.state == "success" or self.state == "failed"
+end
+
 ---@diagnostic disable-next-line: undefined-doc-name
 --- @param proc vim.SystemObj?
 function Prompt:_set_process(proc)
@@ -311,11 +315,10 @@ function Prompt:_set_process(proc)
 end
 
 function Prompt:cancel()
-  if self:is_cancelled() then
+  if self:is_cancelled() or self:is_completed() then
     return
   end
 
-  self.logger:debug("cancel")
   self.state = "cancelled"
   local proc = self._proc
   ---@diagnostic disable-next-line: undefined-field

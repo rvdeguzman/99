@@ -75,6 +75,7 @@ describe("open", function()
 
   local function select_content(idx)
     Window.capture_select_input = function(_, opts)
+      print("capture_select_input", vim.inspect(opts.content), idx)
       opts.cb(true, opts.content[idx])
     end
   end
@@ -84,6 +85,10 @@ describe("open", function()
     local v = vibe()
     local t = tutorial()
 
+    local history = _99:__get_state().tracking.history
+    for _, r in ipairs(history) do
+      print("history", r.state, r:summary())
+    end
     select_content(1)
     _99.open()
     eq(QFixHelpers.create_qfix_entries(s), qfix_items())

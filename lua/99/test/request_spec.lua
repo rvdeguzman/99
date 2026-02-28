@@ -23,7 +23,7 @@ describe("request test", function()
 
     eq("ready", context.state)
 
-    eq(0, state:active_request_count())
+    eq(0, state.tracking:active_count())
     context:start_request({
       on_start = function()
         print("on_start")
@@ -36,14 +36,14 @@ describe("request test", function()
       on_stderr = function() end,
     })
     test_utils.next_frame()
-    eq(1, state:active_request_count())
+    eq(1, state.tracking:active_count())
 
     eq("requesting", context.state)
 
     p:resolve("success", "    return 'implemented!'")
     assert.is_true(finished_called)
 
-    eq(0, state:active_request_count())
+    eq(0, state.tracking:active_count())
     eq("success", context.state)
     eq("success", finished_status)
   end)

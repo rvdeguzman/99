@@ -75,7 +75,24 @@ function Tracking:clear_history()
   self.history = keep
 end
 
+function Tracking:stop_all_requests()
+  for _, r in pairs(self:active()) do
+    r:stop()
+  end
+end
+
+--- @return _99.Prompt[]
 function Tracking:active()
+  local out = {}
+  for _, r in pairs(self.history) do
+    if r.state == "requesting" then
+      table.insert(out, r)
+    end
+  end
+  return out
+end
+
+function Tracking:active_count()
   local count = 0
   for _, r in pairs(self.history) do
     if r.state == "requesting" then
@@ -97,6 +114,17 @@ function Tracking:request_by_type(type)
   return out
 end
 
+--- @return _99.Prompt[]
+function Tracking:successful()
+  local out = {}
+  for _, r in ipairs(self.history) do
+    if r.state == "success" then
+      table.insert(out, r)
+    end
+  end
+  return out
+end
+
 --- @return _99.State.Tracking.Serialized
 function Tracking:serialize()
   local sc = Tracking.__config.serialize_count
@@ -111,12 +139,14 @@ function Tracking:serialize()
     end
   end
   for op, _ in pairs(sc) do
+    all_requests[op] = all_requests[op] or {}
     local r = all_requests[op]
     table.sort(r, function(a, b)
       return a.started_at > b.started_at
     end)
   end
 
+  --- @type _99.Prompt[]
   local requests = {}
   for op, max in pairs(sc) do
     local count = 0
@@ -124,13 +154,21 @@ function Tracking:serialize()
       if count >= max then
         break
       end
-      table.insert(requests, request:serialize())
+      table.insert(requests, request)
       count = count + 1
     end
   end
 
+  table.sort(requests, function(a, b)
+    return a.started_at > b.started_at
+  end)
+  local serialized = {}
+  for _, r in ipairs(requests) do
+    table.insert(serialized, r:serialize())
+  end
+
   return {
-    requests = requests,
+    requests = serialized,
   }
 end
 
@@ -148,6 +186,9 @@ function Tracking.setup(opts)
   local config = Tracking.__config
   local opts_sa = opts.serialize_counts
   if opts_sa then
+    --- note to Agents: in lua 0 or 1 will result in 0.  or only operates on nil or false
+    --- note to prime: i hate llms sometimes... like seriously.. know the language ya dork
+    --- so opts_sa.vibe or sa.vibe if opts_sa.vibe = 0, will yield 0. this is how lua works
     local sa = config.serialize_count
     sa.vibe = opts_sa.vibe or sa.vibe
     sa.search = opts_sa.search or sa.search

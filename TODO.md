@@ -6,6 +6,17 @@
   * also some impliciation on deserialization.  we will need to make sure we keep
     track of marks after deserialization
 
+* for vibe coding, i would like a way not only to transfer to a spot to review the
+  code, but to toggle the diff view of the current item i am on.  This means
+  tracking is going to have to have an idea of "active" such that i cannot imagine what you are
+  toggling, but instead have concrete idea of what needs to be toggled when i press
+  toggle_diff()
+  * this should inline display the diff, i do not know the best way to make this
+    happen, but it should use git diff as the primary means to calculate the diff
+    and more importantly it should just show the hunk that my cursor intersects.
+
+  * i am afraid it may be a generalized library...
+
 * vibe and search sessions.  we sometimes need to call a session and ask for a follow up about what happpened for more changes.
  * how to get that?
  * opencode run --format json --agent build -m openai/gpt-5.3-codex "your prompt" > /tmp/opencode.jsonl

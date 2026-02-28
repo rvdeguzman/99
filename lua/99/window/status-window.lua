@@ -80,7 +80,7 @@ function StatusWindow:_run_loop()
 
   local active_window = Window.has_active_status_window()
   local active_other_window = Window.has_active_windows()
-  local active_requests = self._99.tracking:active_request_count()
+  local active_requests = self._99.tracking:active_count()
   if
     active_window == false and active_other_window
     or active_window and active_requests > 0
@@ -98,7 +98,7 @@ function StatusWindow:_run_loop()
     end
 
     local throb = Throbber.new(function(throb)
-      local count = self._99.tracking:active_request_count()
+      local count = self._99.tracking:active_count()
       local win_valid = Window.valid(win)
 
       if count == 0 or not win_valid then
@@ -110,7 +110,7 @@ function StatusWindow:_run_loop()
         throb .. " requests(" .. tostring(count) .. ") " .. throb,
       }
 
-      for _, c in ipairs(self._99.tracking.history) do
+      for _, c in ipairs(self._99.tracking:active()) do
         if c.state == "requesting" then
           table.insert(lines, c.operation)
         end

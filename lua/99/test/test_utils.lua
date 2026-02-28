@@ -113,6 +113,7 @@ end
 --- @return _99.Options
 function M.get_test_setup_options(opts, provider)
   opts = opts or {}
+  opts.tmp_dir = opts.tmp_dir or vim.fn.tempname()
   opts.provider = provider
   opts.logger = {
     error_cache_level = Levels.ERROR,

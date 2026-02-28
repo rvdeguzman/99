@@ -65,7 +65,7 @@ function M.write_file_json_safe(obj, path)
     return
   end
 
-  local obj_str = ""
+  local obj_str
   ok, obj_str = pcall(vim.json.encode, obj)
   if not ok then
     return
