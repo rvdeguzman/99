@@ -1,6 +1,7 @@
 -- luacheck: globals describe it assert before_each after_each
 local _99 = require("99")
 local Window = require("99.window")
+local Logger = require("99.logger.logger")
 local test_utils = require("99.test.test_utils")
 local QFixHelpers = require("99.ops.qfix-helpers")
 local eq = assert.are.same
@@ -39,16 +40,22 @@ end
 describe("open", function()
   local provider
   local previous_capture_select_input
+  local previous_display_full_screen_message
+  local previous_logs_by_id
 
   before_each(function()
     provider = test_utils.TestProvider.new()
     _99.setup(test_utils.get_test_setup_options({}, provider))
 
     previous_capture_select_input = Window.capture_select_input
+    previous_display_full_screen_message = Window.display_full_screen_message
+    previous_logs_by_id = Logger.logs_by_id
   end)
 
   after_each(function()
     Window.capture_select_input = previous_capture_select_input
+    Window.display_full_screen_message = previous_display_full_screen_message
+    Logger.logs_by_id = previous_logs_by_id
   end)
 
   --- @param term "search" | "tutorial" | "vibe"
@@ -75,7 +82,6 @@ describe("open", function()
 
   local function select_content(idx)
     Window.capture_select_input = function(_, opts)
-      print("capture_select_input", vim.inspect(opts.content), idx)
       opts.cb(true, opts.content[idx])
     end
   end
@@ -85,10 +91,6 @@ describe("open", function()
     local v = vibe()
     local t = tutorial()
 
-    local history = _99:__get_state().tracking.history
-    for _, r in ipairs(history) do
-      print("history", r.state, r:summary())
-    end
     select_content(1)
     _99.open()
     eq(QFixHelpers.create_qfix_entries(s), qfix_items())
@@ -100,5 +102,32 @@ describe("open", function()
     select_content(3)
     _99.open()
     some_window_has(t)
+  end)
+
+  it("views logs for selected request xid", function()
+    search()
+    vibe()
+
+    local history = _99:__get_state().tracking.history
+    local logs_by_xid = {
+      [history[1].xid] = { "search log" },
+      [history[2].xid] = { "vibe log" },
+    }
+    Logger.logs_by_id = function(xid)
+      return logs_by_xid[xid]
+    end
+
+    local shown = nil
+    Window.display_full_screen_message = function(lines)
+      shown = lines
+    end
+
+    select_content(1)
+    _99.view_logs()
+    eq({ "search log" }, shown)
+
+    select_content(2)
+    _99.view_logs()
+    eq({ "vibe log" }, shown)
   end)
 end)

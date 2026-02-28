@@ -199,8 +199,8 @@ local _99_state
 --- takes your current selection and sends that along with the prompt provided and replaces
 --- your visual selection with the results
 --- @field view_logs fun(): nil
---- views the most recent logs.  we dont have a way to view older logs in a reasonable right now
---- I want to rework the log viewing
+--- view_logs allows you to select the request you want to see and then you
+--- get to see the logs.
 --- @field stop_all_requests fun(): nil
 --- stops all in flight requests.  this means that the underlying process will
 --- be killed (OpenCode) and any result will be discared

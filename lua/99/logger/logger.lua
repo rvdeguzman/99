@@ -280,7 +280,8 @@ end
 --- @param xid number
 --- @return string[] | nil
 function Logger.logs_by_id(xid)
-  return logger_cache[xid]
+  local logs = logger_cache[xid]
+  return logs and logs.logs
 end
 
 --- @param level number
