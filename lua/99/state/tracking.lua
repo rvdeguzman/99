@@ -31,14 +31,14 @@ function Tracking.new(_99, previous_state)
 end
 
 --- @param context _99.Prompt
-function Tracking:track_prompt_request(context)
+function Tracking:track(context)
   assert(context:valid(), "context is not valid")
   table.insert(self.history, context)
   self.id_to_request[context.xid] = context
 end
 
 --- @return number
-function Tracking:completed_requests()
+function Tracking:completed()
   local count = 0
   for _, entry in ipairs(self.history) do
     if entry.state ~= "requesting" then

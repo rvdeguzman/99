@@ -258,7 +258,7 @@ function _99.info()
   _99_state:refresh_rules()
   table.insert(
     info,
-    string.format("Previous Requests: %d", _99_state:completed_prompts())
+    string.format("Previous Requests: %d", _99_state.tracking:completed())
   )
   table.insert(
     info,
@@ -424,7 +424,7 @@ function _99.open_qfix_for_request(request)
 end
 
 function _99.stop_all_requests()
-  for _, c in pairs(_99_state.__request_by_id) do
+  for _, c in ipairs(_99_state.tracking.history) do
     if c.state == "requesting" then
       c:stop()
     end

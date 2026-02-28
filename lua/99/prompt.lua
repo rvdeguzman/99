@@ -234,7 +234,7 @@ function Prompt:_observer(obs)
   return {
     on_start = function()
       self.state = "requesting"
-      self._99:track_prompt_request(self)
+      self._99.tracking:track(self)
 
       if obs then
         obs.on_start()

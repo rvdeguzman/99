@@ -79,6 +79,8 @@ function State.new(opts)
   --- TODO: Prompt overrides would be a great thing, we just have to get there
   --- for now, i am going to have this as just a hardcoded ... thing
   _99_state.prompts = require("99.prompt-settings")
+
+  local previous = read_state_from_tmp(opts)
   _99_state.tracking = Tracking.new(_99_state)
 
   return _99_state
