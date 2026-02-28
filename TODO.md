@@ -1,3 +1,11 @@
+* marks.  I need to think more about marks and qfix lists.  When items get shifted around
+  i want the qfix list to stay as true as possible.  so every time one opens, we should
+  recreate exactly what are the items based on some marks.
+  * tracking will have to store marks and make them easy to delete based on
+    request.
+  * also some impliciation on deserialization.  we will need to make sure we keep
+    track of marks after deserialization
+
 * vibe and search sessions.  we sometimes need to call a session and ask for a follow up about what happpened for more changes.
  * how to get that?
  * opencode run --format json --agent build -m openai/gpt-5.3-codex "your prompt" > /tmp/opencode.jsonl

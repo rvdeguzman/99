@@ -59,10 +59,10 @@ local function get_tmp_dir(oos)
 end
 
 --- @param opts _99.Options
---- @return _99.StateProps | nil
+--- @return _99.State.Tracking.Serialized | nil
 local function read_state_from_tmp(opts)
   local state_file = utils.named_tmp_file(get_tmp_dir(opts), _99_STATE_FILE)
-  return utils.read_file_json_safe(state_file) --[[@as _99.StateProps]]
+  return utils.read_file_json_safe(state_file) --[[@as _99.State.Tracking.Serialized]]
 end
 
 --- @param opts _99.Options
@@ -81,7 +81,7 @@ function State.new(opts)
   _99_state.prompts = require("99.prompt-settings")
 
   local previous = read_state_from_tmp(opts)
-  _99_state.tracking = Tracking.new(_99_state)
+  _99_state.tracking = Tracking.new(_99_state, previous)
 
   return _99_state
 end

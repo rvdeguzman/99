@@ -98,7 +98,7 @@ function StatusWindow:_run_loop()
     end
 
     local throb = Throbber.new(function(throb)
-      local count = self._99:active_request_count()
+      local count = self._99.tracking:active_request_count()
       local win_valid = Window.valid(win)
 
       if count == 0 or not win_valid then

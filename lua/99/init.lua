@@ -283,10 +283,12 @@ function _99.open_tutorial(context)
 end
 
 function _99.open()
-  local requests = _99_state:requests()
+  local requests = _99_state.tracking.history
   local str_requests = {}
   for _, r in ipairs(requests) do
-    table.insert(str_requests, r:summary())
+    if r.state == "success" then
+      table.insert(str_requests, r:summary())
+    end
   end
   for i = 1, #requests do
     str_requests[i] = string.format("%d: %s", i, requests[i]:summary())
@@ -432,7 +434,7 @@ function _99.stop_all_requests()
 end
 
 function _99.clear_previous_requests()
-  _99_state:clear_history()
+  _99_state.tracking:clear_history()
 end
 
 --- if you touch this function you will be fired
@@ -457,6 +459,7 @@ function _99.setup(opts)
   vim.api.nvim_create_autocmd("VimLeavePre", {
     callback = function()
       _99.stop_all_requests()
+      _99_state:sync()
     end,
   })
 

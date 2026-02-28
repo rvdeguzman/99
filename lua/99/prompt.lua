@@ -118,6 +118,7 @@ function Prompt.deserialize(_99, data)
         data = data.data,
         operation = data.data.type,
         user_prompt = data.user_prompt,
+        started_at = Time.now(),
         xid = get_id(),
     }, Prompt)
     assert(prompt:valid(), "prompt is not valid from data")
