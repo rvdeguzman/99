@@ -88,8 +88,8 @@ through `search` and `work`
                         -- exclude = { ".env", ".env.*", "node_modules", ".git", ... },
                     },
 
-                    --- What autocomplete you use.
-                    source = "cmp" | "blink",
+                    --- What autocomplete engine to use. Defaults to native (built-in) if not specified.
+                    source = "native", -- "native" (default), "cmp", or "blink"
                 },
 
                 --- WARNING: if you change cwd then this is likely broken
@@ -421,7 +421,7 @@ When prompting, you can reference rules and files to add context to your request
 - `#` references rules — type `#` in the prompt to autocomplete rule files from your configured rule directories
 - `@` references files — type `@` to fuzzy-search project files
 
-Referenced content is automatically resolved and injected into the AI context. Requires cmp (`source = "cmp"` in your completion config).
+Referenced content is automatically resolved and injected into the AI context. Native completions work by default. For nvim-cmp or blink.cmp, set `source = "cmp"` or `source = "blink"`.
 
 ## Providers
 99 supports multiple AI CLI backends. Set `provider` in your setup to switch. If you don't set `model`, the provider's default is used.
