@@ -325,6 +325,64 @@ function GeminiCLIProvider._get_default_model()
   return "auto"
 end
 
+--- @class GitHubCopilotProvider : _99.Providers.BaseProvider
+local GitHubCopilotProvider = setmetatable({}, { __index = BaseProvider })
+
+--- @param query string
+--- @param context _99.Prompt
+--- @return string[]
+function GitHubCopilotProvider._build_command(_, query, context)
+  return {
+    "copilot",
+    "--allow-all-tools",
+    "--model",
+    context.model,
+    "--prompt",
+    query,
+  }
+end
+
+--- @return string
+function GitHubCopilotProvider._get_provider_name()
+  return "GitHubCopilotProvider"
+end
+
+--- @return string
+function GitHubCopilotProvider._get_default_model()
+  return "claude-sonnet-4.5"
+end
+
+-- TODO: update with cli command when support exists
+-- GitHub issue link: https://github.com/github/copilot-cli/issues/700
+-- Current list based off https://docs.github.com/en/copilot/reference/ai-models/supported-models
+function GitHubCopilotProvider.fetch_models(callback)
+  callback({
+    "claude-haiku-4.5",
+    "claude-opus-4.5",
+    "claude-opus-4.6",
+    "claude-sonnet-4",
+    "claude-sonnet-4.5",
+    "claude-sonnet-4.6",
+    "gemini-2.5-pro",
+    "gemini-3-flash",
+    "gemini-3-pro",
+    "gemini-3.1-pro",
+    "gpt-4.1",
+    "gpt-4o",
+    "gpt-5-min",
+    "gpt-5.1",
+    "gpt-5.1-codex",
+    "gpt-5.1-codex-mini",
+    "gpt-5.1-codex-max",
+    "gpt-5.2",
+    "gpt-5.2-codex",
+    "gpt-5.3-codex",
+    "grok-code-fast",
+    "raptor-mini",
+    "goldeneye"
+  }, nil)
+end
+
 return {
   BaseProvider = BaseProvider,
   OpenCodeProvider = OpenCodeProvider,
@@ -332,4 +390,5 @@ return {
   CursorAgentProvider = CursorAgentProvider,
   KiroProvider = KiroProvider,
   GeminiCLIProvider = GeminiCLIProvider,
+  GitHubCopilotProvider = GitHubCopilotProvider,
 }

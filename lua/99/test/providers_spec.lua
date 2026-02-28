@@ -87,6 +87,26 @@ describe("providers", function()
     end)
   end)
 
+  describe("GitHubCopilotProvider", function()
+    it("builds correct command with model", function()
+      local request = { model = "claude-sonnet-4.5" }
+      local cmd =
+          Providers.GitHubCopilotProvider._build_command(nil, "test query", request)
+      eq({
+        "copilot",
+        "--allow-all-tools",
+        "--model",
+        "claude-sonnet-4.5",
+        "--prompt",
+        "test query",
+      }, cmd)
+    end)
+
+    it("has correct default model", function()
+      eq("claude-sonnet-4.5", Providers.GitHubCopilotProvider._get_default_model())
+    end)
+  end)
+
   describe("provider integration", function()
     it("can be set as provider override", function()
       local _99 = require("99")
@@ -140,6 +160,17 @@ describe("providers", function()
       end
     )
 
+    it(
+      "uses GitHubCopilotProvider default model when provider specified but no model",
+      function()
+        local _99 = require("99")
+
+        _99.setup({ provider = Providers.GitHubCopilotProvider })
+        local state = _99.__get_state()
+        eq("claude-sonnet-4.5", state.model)
+      end
+    )
+
     it("uses custom model when both provider and model specified", function()
       local _99 = require("99")
 
@@ -158,6 +189,7 @@ describe("providers", function()
       eq("function", type(Providers.ClaudeCodeProvider.make_request))
       eq("function", type(Providers.CursorAgentProvider.make_request))
       eq("function", type(Providers.GeminiCLIProvider.make_request))
+      eq("function", type(Providers.GitHubCopilotProvider.make_request))
     end)
   end)
 end)
